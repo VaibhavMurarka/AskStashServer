@@ -313,3 +313,4 @@ def health_check():
             "supabase": "connected"
         }
     }
+

@@ -156,3 +156,5 @@ RESPONSE:"""
         return response.text
     except Exception as e:
         return f"I apologize, but I encountered an error while processing your request: {str(e)}"
+    
+    
