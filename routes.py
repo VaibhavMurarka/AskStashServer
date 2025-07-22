@@ -8,7 +8,6 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
 import jwt
 
-# Import from the dependencies file
 from dependencies import (
     supabase, SECRET_KEY, ALGORITHM, create_access_token, hash_password,
     verify_password, extract_text_from_file, generate_response
@@ -16,7 +15,7 @@ from dependencies import (
 
 router = APIRouter()
 
-# --- Pydantic Models for Request/Response Validation ---
+# Pydantic Models for Request/Response Validation 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
@@ -46,7 +45,7 @@ class GuestChatRequest(BaseModel):
     context: Optional[str] = ""
     context_sources: Optional[List[dict]] = []
 
-# --- Authentication Dependency ---
+# Authentication Dependency 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
 
 async def get_current_user_id(token: Optional[str] = Depends(oauth2_scheme)) -> int:
@@ -75,7 +74,6 @@ async def get_current_user_id(token: Optional[str] = Depends(oauth2_scheme)) -> 
     
     return user_id
 
-# --- Authentication Routes ---
 @router.post("/auth/register", response_model=Token, status_code=status.HTTP_201_CREATED, tags=["Authentication"])
 async def register(user: UserCreate):
     try:
@@ -128,7 +126,7 @@ async def login(form_data: UserLogin):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-# --- Document Routes ---
+# Document
 @router.post("/upload", status_code=status.HTTP_201_CREATED, tags=["Documents"])
 async def upload_file(
     file: UploadFile = File(...),
@@ -137,9 +135,7 @@ async def upload_file(
     try:
         if not file.filename or '/' in file.filename or '\\' in file.filename:
              raise HTTPException(status_code=400, detail="Invalid filename")
-        
-        # --- THIS IS THE CHANGED LINE ---
-        # It now uses the original filename without the random prefix.
+
         filename = file.filename.lstrip("./\\")
 
         file_content = await file.read()
@@ -217,7 +213,7 @@ async def delete_document(document_id: int, current_user_id: int = Depends(get_c
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-# --- Chat Routes ---
+# Chat
 @router.post("/chat", tags=["Chat"])
 async def chat(req: ChatRequest, current_user_id: int = Depends(get_current_user_id)):
     try:
@@ -266,7 +262,7 @@ async def get_chat_history(current_user_id: int = Depends(get_current_user_id)):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-# --- Guest Routes ---
+# Guest
 @router.post("/guest/extract-text", tags=["Guest Mode"])
 async def guest_extract_text(file: UploadFile = File(...)):
     try:
@@ -301,7 +297,7 @@ async def guest_chat(req: GuestChatRequest):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-# --- Health Check ---
+# Health Check
 @router.get("/health", tags=["Status"])
 def health_check():
     return {

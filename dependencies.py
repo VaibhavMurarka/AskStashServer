@@ -1,8 +1,5 @@
-# dependencies.py
-
 from dotenv import load_dotenv
-load_dotenv() # This loads the variables from .env
-
+load_dotenv() 
 import hashlib
 import jwt
 import os
@@ -13,7 +10,7 @@ import io
 from PIL import Image
 import PyPDF2
 from docx import Document
-import filetype # Using filetype instead of magic
+import filetype 
 
 # Supabase configuration
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
@@ -36,7 +33,7 @@ if not GEMINI_API_KEY:
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# --- Utility Functions ---
+# Functions 
 
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
@@ -156,5 +153,4 @@ RESPONSE:"""
         return response.text
     except Exception as e:
         return f"I apologize, but I encountered an error while processing your request: {str(e)}"
-    
     

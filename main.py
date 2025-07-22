@@ -3,17 +3,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-# Import the router from routes.py
 from routes import router as api_router
 
 app = FastAPI(title="RAG Application API", version="1.0.0")
 
-# Configure CORS for production
+# CORS for production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://lightyellow-starling-420209.hostingersite.com",
-        "http://localhost:3000",  # For local development
+        "http://localhost:3000",  
         "http://127.0.0.1:3000",
         "https://askstash.vercel.app"
     ],
@@ -22,7 +21,6 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
-# Include all the API routes
 app.include_router(api_router, prefix="/api")
 
 @app.get("/", response_class=HTMLResponse, tags=["Status"])
