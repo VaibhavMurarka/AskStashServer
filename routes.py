@@ -15,7 +15,7 @@ from dependencies import (
 
 router = APIRouter()
 
-# Pydantic Models for Request/Response Validation 
+# Pydantic Models for Validation 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
@@ -45,7 +45,7 @@ class GuestChatRequest(BaseModel):
     context: Optional[str] = ""
     context_sources: Optional[List[dict]] = []
 
-# Authentication Dependency 
+# Authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
 
 async def get_current_user_id(token: Optional[str] = Depends(oauth2_scheme)) -> int:
@@ -126,7 +126,7 @@ async def login(form_data: UserLogin):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-# Document
+# Document Routes 
 @router.post("/upload", status_code=status.HTTP_201_CREATED, tags=["Documents"])
 async def upload_file(
     file: UploadFile = File(...),
@@ -135,7 +135,7 @@ async def upload_file(
     try:
         if not file.filename or '/' in file.filename or '\\' in file.filename:
              raise HTTPException(status_code=400, detail="Invalid filename")
-
+        
         filename = file.filename.lstrip("./\\")
 
         file_content = await file.read()
@@ -148,7 +148,9 @@ async def upload_file(
             raise HTTPException(status_code=400, detail="Empty file uploaded.")
 
         extracted_text = extract_text_from_file(file_content, filename)
-        
+
+        extracted_text = extracted_text.replace('\x00', '')
+
         warning_message = None
         if extracted_text.startswith('[Error') or len(extracted_text.strip()) < 10:
              warning_message = "Text extraction may have had issues. Please verify."
@@ -213,7 +215,7 @@ async def delete_document(document_id: int, current_user_id: int = Depends(get_c
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-# Chat
+# Chat Routes 
 @router.post("/chat", tags=["Chat"])
 async def chat(req: ChatRequest, current_user_id: int = Depends(get_current_user_id)):
     try:
@@ -262,7 +264,7 @@ async def get_chat_history(current_user_id: int = Depends(get_current_user_id)):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-# Guest
+# Guest Routes 
 @router.post("/guest/extract-text", tags=["Guest Mode"])
 async def guest_extract_text(file: UploadFile = File(...)):
     try:
@@ -309,4 +311,3 @@ def health_check():
             "supabase": "connected"
         }
     }
-
